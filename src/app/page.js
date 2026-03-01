@@ -47,6 +47,12 @@ export default function HomePage() {
   const [aboutText, setAboutText] = useState('');
   const [contact, setContact] = useState({});
 
+  // OTP State
+  const [showOTP, setShowOTP] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [otpSending, setOtpSending] = useState(false);
+
   useEffect(() => {
     fetch('/api/pages')
       .then(r => r.json())
@@ -58,14 +64,87 @@ export default function HomePage() {
       }).catch(() => { });
   }, []);
 
-  const handleSubmit = async (e) => {
+  // OTP countdown timer
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const t = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [otpTimer]);
+
+  // Step 1: Validate form, request OTP
+  const handleRequestOTP = async (e) => {
     e.preventDefault();
+    const { pname, rname, phone, hdate, htime, ambulancetype, address, city, state } = formData;
+    if (!pname || !rname || !phone || !hdate || !htime || !ambulancetype || !address || !city || !state) {
+      toast('Please fill all required fields.', 'error'); return;
+    }
+    if (phone.replace(/\D/g, '').length < 10) {
+      toast('Enter a valid 10-digit phone number.', 'error'); return;
+    }
+
+    setOtpSending(true);
+    try {
+      const res = await fetch('/api/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast(`OTP sent to ${phone}! Check your phone.`, 'success');
+        setShowOTP(true);
+        setOtpDigits(['', '', '', '']);
+        setOtpTimer(300); // 5 min
+        // Focus first OTP input
+        setTimeout(() => document.getElementById('otp-0')?.focus(), 200);
+      } else {
+        toast(data.error || 'Failed to send OTP.', 'error');
+      }
+    } catch {
+      toast('Network error.', 'error');
+    }
+    setOtpSending(false);
+  };
+
+  // OTP input handling
+  const handleOtpChange = (index, value) => {
+    if (value.length > 1) value = value[value.length - 1];
+    if (!/^\d*$/.test(value)) return;
+    const newDigits = [...otpDigits];
+    newDigits[index] = value;
+    setOtpDigits(newDigits);
+    // Auto-focus next
+    if (value && index < 3) document.getElementById(`otp-${index + 1}`)?.focus();
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+  };
+
+  // Step 2: Verify OTP and complete booking
+  const handleVerifyAndBook = async () => {
+    const otp = otpDigits.join('');
+    if (otp.length !== 4) { toast('Enter the 4-digit OTP.', 'error'); return; }
+
     setSubmitting(true);
     try {
+      // Verify OTP
+      const verifyRes = await fetch('/api/otp', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: formData.phone, otp }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) { toast(verifyData.error || 'OTP verification failed.', 'error'); setSubmitting(false); return; }
+
+      // OTP verified — now create booking
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, otpVerified: true }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -74,7 +153,7 @@ export default function HomePage() {
           : '';
         toast(`Booking confirmed! #${data.bookingNumber}${assignMsg}`, 'success', 10000);
 
-        // Send WhatsApp confirmation to customer
+        // WhatsApp confirmation
         const phone = formData.phone.replace(/\D/g, '');
         const whatsappPhone = phone.startsWith('91') ? phone : '91' + phone;
         const trackUrl = `${window.location.origin}/track`;
@@ -100,6 +179,8 @@ export default function HomePage() {
         window.open(`https://wa.me/${whatsappPhone}?text=${whatsappMsg}`, '_blank');
 
         setFormData({ pname: '', rname: '', phone: '', email: '', hdate: '', htime: '', ambulancetype: '', address: '', city: '', state: '', message: '' });
+        setShowOTP(false);
+        setOtpDigits(['', '', '', '']);
       } else {
         toast(data.error || 'Something went wrong.', 'error');
       }
@@ -229,23 +310,24 @@ export default function HomePage() {
               <div className="line" />
             </motion.div>
 
-            <motion.form className="glass-card booking-form" onSubmit={handleSubmit} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+            <motion.form className="glass-card booking-form" onSubmit={handleRequestOTP} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>Book Ambulance</h3>
               <div className="form-grid">
                 <div className="input-group">
                   <label>Patient Name *</label>
-                  <input className="input-field" name="pname" value={formData.pname} onChange={handleChange} placeholder="Enter patient name" required />
+                  <input className="input-field" name="pname" value={formData.pname} onChange={handleChange} placeholder="Patient full name" required />
                 </div>
                 <div className="input-group">
                   <label>Relative Name *</label>
-                  <input className="input-field" name="rname" value={formData.rname} onChange={handleChange} placeholder="Enter relative name" required />
+                  <input className="input-field" name="rname" value={formData.rname} onChange={handleChange} placeholder="Contact person name" required />
                 </div>
                 <div className="input-group">
                   <label>Contact Number *</label>
-                  <input className="input-field" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Enter phone number" required />
+                  <input className="input-field" name="phone" value={formData.phone} onChange={handleChange} placeholder="10-digit mobile number" required />
                 </div>
                 <div className="input-group">
                   <label>Email (for notifications)</label>
-                  <input className="input-field" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter email for status updates" />
+                  <input className="input-field" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" />
                 </div>
                 <div className="input-group">
                   <label>Hiring Date *</label>
@@ -258,16 +340,16 @@ export default function HomePage() {
                 <div className="input-group">
                   <label>Ambulance Type *</label>
                   <select className="input-field" name="ambulancetype" value={formData.ambulancetype} onChange={handleChange} required>
-                    <option value="">Select Type</option>
+                    <option value="">Select type</option>
                     <option value="1">Basic Life Support (BLS)</option>
                     <option value="2">Advanced Life Support (ALS)</option>
                     <option value="3">Non-Emergency Transport</option>
-                    <option value="4">Boat Ambulance</option>
+                    <option value="4">Neonatal</option>
                   </select>
                 </div>
                 <div className="input-group">
                   <label>Address *</label>
-                  <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Enter pickup address" required />
+                  <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Pickup address" required />
                 </div>
                 <div className="input-group">
                   <label>City *</label>
@@ -283,11 +365,62 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary btn-lg" disabled={submitting}>
-                  {submitting ? 'Submitting...' : 'Submit Request'}
+                <button type="submit" className="btn btn-primary btn-lg" disabled={otpSending || showOTP}>
+                  {otpSending ? 'Sending OTP...' : '🔐 Verify & Book'}
                 </button>
               </div>
             </motion.form>
+
+            {/* OTP Verification Modal */}
+            {showOTP && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+                <motion.div className="glass-card" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '2.5rem', maxWidth: 420, width: '90%', textAlign: 'center' }}>
+                  <div style={{ width: 60, height: 60, background: 'var(--accent-gradient)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
+                  <h3 style={{ marginBottom: '0.5rem' }}>Verify Your Phone</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                    Enter the 4-digit OTP sent to <b style={{ color: 'var(--accent-cyan)' }}>{formData.phone}</b>
+                  </p>
+
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: '1.5rem' }}>
+                    {otpDigits.map((d, i) => (
+                      <input
+                        key={i}
+                        id={`otp-${i}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={d}
+                        onChange={e => handleOtpChange(i, e.target.value)}
+                        onKeyDown={e => handleOtpKeyDown(i, e)}
+                        style={{
+                          width: 55, height: 60, textAlign: 'center', fontSize: '1.5rem', fontWeight: 700,
+                          background: 'var(--bg-tertiary)', border: '2px solid var(--border-color)',
+                          borderRadius: 12, color: 'var(--text-primary)', outline: 'none',
+                        }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--accent-cyan)'; }}
+                        onBlur={e => { e.target.style.borderColor = 'var(--border-color)'; }}
+                      />
+                    ))}
+                  </div>
+
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                    {otpTimer > 0
+                      ? `OTP expires in ${Math.floor(otpTimer / 60)}:${(otpTimer % 60).toString().padStart(2, '0')}`
+                      : 'OTP expired.'}
+                    {otpTimer === 0 && (
+                      <button onClick={handleRequestOTP} style={{ background: 'none', border: 'none', color: 'var(--accent-cyan)', cursor: 'pointer', marginLeft: 6, fontSize: '0.8rem' }}>Resend</button>
+                    )}
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button className="btn btn-secondary btn-lg" style={{ flex: 1 }} onClick={() => { setShowOTP(false); setOtpDigits(['', '', '', '']); }}>Cancel</button>
+                    <button className="btn btn-primary btn-lg" style={{ flex: 2 }} onClick={handleVerifyAndBook} disabled={submitting || otpDigits.join('').length !== 4}>
+                      {submitting ? 'Confirming...' : '✅ Confirm Booking'}
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
           </div>
         </section>
 
