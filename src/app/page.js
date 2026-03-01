@@ -46,6 +46,7 @@ export default function HomePage() {
   const [submitting, setSubmitting] = useState(false);
   const [aboutText, setAboutText] = useState('');
   const [contact, setContact] = useState({});
+  const [bookingSuccess, setBookingSuccess] = useState(null);
 
   // OTP State
   const [showOTP, setShowOTP] = useState(false);
@@ -148,10 +149,19 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        const assignMsg = data.assigned
-          ? `\nDriver: ${data.driverName} | Ambulance: ${data.ambulanceReg}`
-          : '';
-        toast(`Booking confirmed! #${data.bookingNumber}${assignMsg}`, 'success', 10000);
+        // Store success data for confirmation screen
+        setBookingSuccess({
+          bookingNumber: data.bookingNumber,
+          assigned: data.assigned,
+          driverName: data.driverName,
+          ambulanceReg: data.ambulanceReg,
+          patientName: formData.pname,
+          relativeName: formData.rname,
+          phone: formData.phone,
+          date: formData.hdate,
+          time: formData.htime,
+          address: `${formData.address}, ${formData.city}, ${formData.state}`,
+        });
 
         // WhatsApp confirmation
         const phone = formData.phone.replace(/\D/g, '');
@@ -227,6 +237,9 @@ export default function HomePage() {
             </a>
             <a href="/track" className="btn btn-secondary btn-lg">
               Track Ambulance
+            </a>
+            <a href="tel:108" className="btn btn-lg" style={{ background: '#dc2626', color: '#fff', border: 'none', animation: 'pulse 2s infinite' }}>
+              🆘 Call 108
             </a>
           </div>
         </motion.div>
@@ -304,142 +317,194 @@ export default function HomePage() {
         {/* BOOKING FORM */}
         <section id="booking" className="section">
           <div className="container">
-            <motion.div className="section-header" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-              <h2>Book an Ambulance</h2>
-              <p>Fill the form below to request an ambulance. We&apos;ll respond immediately.</p>
-              <div className="line" />
-            </motion.div>
 
-            <motion.form className="glass-card booking-form" onSubmit={handleRequestOTP} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>Book Ambulance</h3>
-              <div className="form-grid">
-                <div className="input-group">
-                  <label>Patient Name *</label>
-                  <input className="input-field" name="pname" value={formData.pname} onChange={handleChange} placeholder="Patient full name" required />
-                </div>
-                <div className="input-group">
-                  <label>Relative Name *</label>
-                  <input className="input-field" name="rname" value={formData.rname} onChange={handleChange} placeholder="Contact person name" required />
-                </div>
-                <div className="input-group">
-                  <label>Contact Number *</label>
-                  <input className="input-field" name="phone" value={formData.phone} onChange={handleChange} placeholder="10-digit mobile number" required />
-                </div>
-                <div className="input-group">
-                  <label>Email (for notifications)</label>
-                  <input className="input-field" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" />
-                </div>
-                <div className="input-group">
-                  <label>Hiring Date *</label>
-                  <input className="input-field" name="hdate" type="date" value={formData.hdate} onChange={handleChange} required />
-                </div>
-                <div className="input-group">
-                  <label>Hiring Time *</label>
-                  <input className="input-field" name="htime" type="time" value={formData.htime} onChange={handleChange} required />
-                </div>
-                <div className="input-group">
-                  <label>Ambulance Type *</label>
-                  <select className="input-field" name="ambulancetype" value={formData.ambulancetype} onChange={handleChange} required>
-                    <option value="">Select type</option>
-                    <option value="1">Basic Life Support (BLS)</option>
-                    <option value="2">Advanced Life Support (ALS)</option>
-                    <option value="3">Non-Emergency Transport</option>
-                    <option value="4">Neonatal</option>
-                  </select>
-                </div>
-                <div className="input-group">
-                  <label>Address *</label>
-                  <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Pickup address" required />
-                </div>
-                <div className="input-group">
-                  <label>City *</label>
-                  <input className="input-field" name="city" value={formData.city} onChange={handleChange} placeholder="Enter city" required />
-                </div>
-                <div className="input-group">
-                  <label>State *</label>
-                  <input className="input-field" name="state" value={formData.state} onChange={handleChange} placeholder="Enter state" required />
-                </div>
-                <div className="input-group form-full">
-                  <label>Message (Optional)</label>
-                  <textarea className="input-field" name="message" value={formData.message} onChange={handleChange} placeholder="Any special instructions..." rows={4} />
-                </div>
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary btn-lg" disabled={otpSending || showOTP}>
-                  {otpSending ? 'Sending OTP...' : '🔐 Verify & Book'}
-                </button>
-              </div>
-            </motion.form>
+            {/* Booking Success Screen */}
+            {bookingSuccess ? (
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+                <div style={{ width: 80, height: 80, background: 'linear-gradient(135deg, #10b981, #06b6d4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 36 }}>✅</div>
+                <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Booking Confirmed!</h2>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Your ambulance has been booked successfully</p>
 
-            {/* OTP Verification Modal */}
-            {showOTP && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '2.5rem', maxWidth: 440, width: '90%', textAlign: 'center', background: '#111827', borderRadius: 24, border: '1px solid #1e293b' }}>
-                  <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
-                  <h3 style={{ marginBottom: '0.5rem', color: '#ffffff', fontSize: '1.3rem' }}>Verify Your Phone</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                    OTP sent to <b style={{ color: '#06b6d4' }}>{formData.phone}</b>
-                  </p>
-
-                  {/* Show OTP clearly */}
-                  <div style={{ background: '#065f46', border: '1px solid #10b981', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem', display: 'inline-block' }}>
-                    <span style={{ color: '#6ee7b7', fontSize: '0.8rem' }}>Your OTP: </span>
-                    <span style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 800, letterSpacing: 6 }}>{otpCode}</span>
+                <div className="glass-card" style={{ padding: '2rem', textAlign: 'left', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Booking ID</span>
+                    <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--accent-cyan)' }}>#{bookingSuccess.bookingNumber}</span>
                   </div>
 
-                  <p style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '1rem' }}>Enter this code below to confirm your booking</p>
-
-                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: '1.5rem' }}>
-                    {otpDigits.map((d, i) => (
-                      <input
-                        key={i}
-                        id={`otp-${i}`}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={d}
-                        onChange={e => handleOtpChange(i, e.target.value)}
-                        onKeyDown={e => handleOtpKeyDown(i, e)}
-                        style={{
-                          width: 58, height: 64, textAlign: 'center', fontSize: '1.8rem', fontWeight: 800,
-                          background: '#1e293b', border: '2px solid #334155',
-                          borderRadius: 14, color: '#ffffff', outline: 'none',
-                        }}
-                        onFocus={e => { e.target.style.borderColor = '#06b6d4'; e.target.style.boxShadow = '0 0 12px rgba(6,182,212,0.3)'; }}
-                        onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }}
-                      />
-                    ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>👤 Patient</span><b>{bookingSuccess.patientName}</b></div>
+                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>📞 Contact</span><b>{bookingSuccess.phone}</b></div>
+                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>📅 Date</span><b>{bookingSuccess.date}</b></div>
+                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>⏰ Time</span><b>{bookingSuccess.time}</b></div>
                   </div>
 
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1.2rem' }}>
-                    {otpTimer > 0
-                      ? `Expires in ${Math.floor(otpTimer / 60)}:${(otpTimer % 60).toString().padStart(2, '0')}`
-                      : 'OTP expired'}
-                    {' · '}
-                    <button
-                      onClick={(e) => { setOtpDigits(['', '', '', '']); handleRequestOTP(e); }}
-                      disabled={otpSending}
-                      style={{ background: 'none', border: 'none', color: '#06b6d4', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'underline' }}
-                    >
-                      {otpSending ? 'Sending...' : '🔄 Resend OTP'}
-                    </button>
-                  </p>
+                  <div style={{ marginBottom: '1rem' }}><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>📍 Pickup</span><b>{bookingSuccess.address}</b></div>
 
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button
-                      style={{ flex: 1, padding: '14px', borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '0.95rem', cursor: 'pointer' }}
-                      onClick={() => { setShowOTP(false); setOtpDigits(['', '', '', '']); setOtpCode(''); }}
-                    >Cancel</button>
-                    <button
-                      style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: otpDigits.join('').length === 4 ? 'linear-gradient(135deg, #06b6d4, #10b981)' : '#334155', color: '#ffffff', fontSize: '0.95rem', fontWeight: 700, cursor: otpDigits.join('').length === 4 ? 'pointer' : 'not-allowed' }}
-                      onClick={handleVerifyAndBook}
-                      disabled={submitting || otpDigits.join('').length !== 4}
-                    >
-                      {submitting ? 'Confirming...' : '✅ Confirm Booking'}
-                    </button>
+                  {bookingSuccess.assigned && (
+                    <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12, padding: '1rem', marginBottom: '1rem' }}>
+                      <span style={{ color: '#10b981', fontSize: '0.75rem', display: 'block', marginBottom: '0.5rem' }}>🚑 Driver Assigned</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <b>{bookingSuccess.driverName}</b>
+                        <span style={{ color: 'var(--text-muted)' }}>{bookingSuccess.ambulanceReg}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 12, padding: '1rem', textAlign: 'center' }}>
+                    <span style={{ color: '#06b6d4', fontSize: '0.8rem' }}>🕒 Estimated Arrival</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff' }}>10-15 Minutes</div>
                   </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a href="/track" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
+                    🔍 Track Ambulance
+                  </a>
+                  <button className="btn btn-secondary btn-lg" onClick={() => setBookingSuccess(null)}>
+                    🚑 Book Another
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                <motion.div className="section-header" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+                  <h2>Book an Ambulance</h2>
+                  <p>Fill the form below to request an ambulance. We&apos;ll respond immediately.</p>
+                  <div className="line" />
                 </motion.div>
-              </div>
+
+                <motion.form className="glass-card booking-form" onSubmit={handleRequestOTP} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+                  <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>Book Ambulance</h3>
+                  <div className="form-grid">
+                    <div className="input-group">
+                      <label>Patient Name *</label>
+                      <input className="input-field" name="pname" value={formData.pname} onChange={handleChange} placeholder="Patient full name" required />
+                    </div>
+                    <div className="input-group">
+                      <label>Relative Name *</label>
+                      <input className="input-field" name="rname" value={formData.rname} onChange={handleChange} placeholder="Contact person name" required />
+                    </div>
+                    <div className="input-group">
+                      <label>Contact Number *</label>
+                      <input className="input-field" name="phone" value={formData.phone} onChange={handleChange} placeholder="10-digit mobile number" required />
+                    </div>
+                    <div className="input-group">
+                      <label>Email (for notifications)</label>
+                      <input className="input-field" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" />
+                    </div>
+                    <div className="input-group">
+                      <label>Hiring Date *</label>
+                      <input className="input-field" name="hdate" type="date" value={formData.hdate} onChange={handleChange} required />
+                    </div>
+                    <div className="input-group">
+                      <label>Hiring Time *</label>
+                      <input className="input-field" name="htime" type="time" value={formData.htime} onChange={handleChange} required />
+                    </div>
+                    <div className="input-group">
+                      <label>Ambulance Type *</label>
+                      <select className="input-field" name="ambulancetype" value={formData.ambulancetype} onChange={handleChange} required>
+                        <option value="">Select type</option>
+                        <option value="1">Basic Life Support (BLS)</option>
+                        <option value="2">Advanced Life Support (ALS)</option>
+                        <option value="3">Non-Emergency Transport</option>
+                        <option value="4">Neonatal</option>
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>Address *</label>
+                      <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Pickup address" required />
+                    </div>
+                    <div className="input-group">
+                      <label>City *</label>
+                      <input className="input-field" name="city" value={formData.city} onChange={handleChange} placeholder="Enter city" required />
+                    </div>
+                    <div className="input-group">
+                      <label>State *</label>
+                      <input className="input-field" name="state" value={formData.state} onChange={handleChange} placeholder="Enter state" required />
+                    </div>
+                    <div className="input-group form-full">
+                      <label>Message (Optional)</label>
+                      <textarea className="input-field" name="message" value={formData.message} onChange={handleChange} placeholder="Any special instructions..." rows={4} />
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit" className="btn btn-primary btn-lg" disabled={otpSending || showOTP}>
+                      {otpSending ? 'Sending OTP...' : '🔐 Verify & Book'}
+                    </button>
+                  </div>
+                </motion.form>
+
+                {/* OTP Verification Modal */}
+                {showOTP && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '2.5rem', maxWidth: 440, width: '90%', textAlign: 'center', background: '#111827', borderRadius: 24, border: '1px solid #1e293b' }}>
+                      <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
+                      <h3 style={{ marginBottom: '0.5rem', color: '#ffffff', fontSize: '1.3rem' }}>Verify Your Phone</h3>
+                      <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                        OTP sent to <b style={{ color: '#06b6d4' }}>{formData.phone}</b>
+                      </p>
+
+                      {/* Show OTP clearly */}
+                      <div style={{ background: '#065f46', border: '1px solid #10b981', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem', display: 'inline-block' }}>
+                        <span style={{ color: '#6ee7b7', fontSize: '0.8rem' }}>Your OTP: </span>
+                        <span style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 800, letterSpacing: 6 }}>{otpCode}</span>
+                      </div>
+
+                      <p style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '1rem' }}>Enter this code below to confirm your booking</p>
+
+                      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: '1.5rem' }}>
+                        {otpDigits.map((d, i) => (
+                          <input
+                            key={i}
+                            id={`otp-${i}`}
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={1}
+                            value={d}
+                            onChange={e => handleOtpChange(i, e.target.value)}
+                            onKeyDown={e => handleOtpKeyDown(i, e)}
+                            style={{
+                              width: 58, height: 64, textAlign: 'center', fontSize: '1.8rem', fontWeight: 800,
+                              background: '#1e293b', border: '2px solid #334155',
+                              borderRadius: 14, color: '#ffffff', outline: 'none',
+                            }}
+                            onFocus={e => { e.target.style.borderColor = '#06b6d4'; e.target.style.boxShadow = '0 0 12px rgba(6,182,212,0.3)'; }}
+                            onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }}
+                          />
+                        ))}
+                      </div>
+
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1.2rem' }}>
+                        {otpTimer > 0
+                          ? `Expires in ${Math.floor(otpTimer / 60)}:${(otpTimer % 60).toString().padStart(2, '0')}`
+                          : 'OTP expired'}
+                        {' · '}
+                        <button
+                          onClick={(e) => { setOtpDigits(['', '', '', '']); handleRequestOTP(e); }}
+                          disabled={otpSending}
+                          style={{ background: 'none', border: 'none', color: '#06b6d4', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'underline' }}
+                        >
+                          {otpSending ? 'Sending...' : '🔄 Resend OTP'}
+                        </button>
+                      </p>
+
+                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <button
+                          style={{ flex: 1, padding: '14px', borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '0.95rem', cursor: 'pointer' }}
+                          onClick={() => { setShowOTP(false); setOtpDigits(['', '', '', '']); setOtpCode(''); }}
+                        >Cancel</button>
+                        <button
+                          style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: otpDigits.join('').length === 4 ? 'linear-gradient(135deg, #06b6d4, #10b981)' : '#334155', color: '#ffffff', fontSize: '0.95rem', fontWeight: 700, cursor: otpDigits.join('').length === 4 ? 'pointer' : 'not-allowed' }}
+                          onClick={handleVerifyAndBook}
+                          disabled={submitting || otpDigits.join('').length !== 4}
+                        >
+                          {submitting ? 'Confirming...' : '✅ Confirm Booking'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
