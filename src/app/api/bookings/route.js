@@ -13,18 +13,24 @@ export async function POST(request) {
 
         const bookingNumber = generateBookingNumber();
 
-        const { error } = await supabase.from('bookings').insert({
+        const bookingData = {
             booking_number: bookingNumber,
             patient_name: pname,
             relative_name: rname,
             relative_phone: phone,
-            relative_email: email || null,
             hiring_date: hdate,
             hiring_time: htime,
             ambulance_type: parseInt(ambulancetype),
             address, city, state,
             message: message || '',
-        });
+        };
+
+        // Try with email field first, fallback without it
+        let { error } = await supabase.from('bookings').insert({ ...bookingData, relative_email: email || null });
+        if (error && error.message?.includes('relative_email')) {
+            const result = await supabase.from('bookings').insert(bookingData);
+            error = result.error;
+        }
 
         if (error) throw error;
         return NextResponse.json({ bookingNumber, message: 'Booking created successfully.' });
