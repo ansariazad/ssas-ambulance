@@ -69,12 +69,18 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast(`Booking successful! Number: ${data.bookingNumber}. Save this for tracking.`, 'success', 8000);
+        const assignMsg = data.assigned
+          ? `\nDriver: ${data.driverName} | Ambulance: ${data.ambulanceReg}`
+          : '';
+        toast(`Booking confirmed! #${data.bookingNumber}${assignMsg}`, 'success', 10000);
 
         // Send WhatsApp confirmation to customer
         const phone = formData.phone.replace(/\D/g, '');
         const whatsappPhone = phone.startsWith('91') ? phone : '91' + phone;
         const trackUrl = `${window.location.origin}/track`;
+        const driverInfo = data.assigned
+          ? `\n👤 *Driver:* ${data.driverName}\n🚑 *Ambulance:* ${data.ambulanceReg}\n📌 *Status:* Assigned & dispatched!`
+          : `\n📌 *Status:* Received — assigning driver shortly`;
         const whatsappMsg = encodeURIComponent(
           `🚑 *SSAS - Booking Confirmed!*\n\n` +
           `Hello *${formData.rname}*,\n\n` +
@@ -84,7 +90,8 @@ export default function HomePage() {
           `• Patient: ${formData.pname}\n` +
           `• Date: ${formData.hdate}\n` +
           `• Time: ${formData.htime}\n` +
-          `• Pickup: ${formData.address}, ${formData.city}, ${formData.state}\n\n` +
+          `• Pickup: ${formData.address}, ${formData.city}, ${formData.state}` +
+          driverInfo + `\n\n` +
           `🔍 *Track your ambulance:*\n${trackUrl}\n\n` +
           `Use Booking ID *#${data.bookingNumber}* to track status.\n\n` +
           `For emergencies call: 📞 108\n` +
