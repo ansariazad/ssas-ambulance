@@ -92,7 +92,7 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast(`OTP sent to ${phone}! Check your phone.`, 'success');
+        toast(`Your OTP is: ${data.otp} — Enter this to confirm booking`, 'success', 15000);
         setShowOTP(true);
         setOtpDigits(['', '', '', '']);
         setOtpTimer(300); // 5 min
@@ -393,12 +393,13 @@ export default function HomePage() {
                         onChange={e => handleOtpChange(i, e.target.value)}
                         onKeyDown={e => handleOtpKeyDown(i, e)}
                         style={{
-                          width: 55, height: 60, textAlign: 'center', fontSize: '1.5rem', fontWeight: 700,
-                          background: 'var(--bg-tertiary)', border: '2px solid var(--border-color)',
-                          borderRadius: 12, color: 'var(--text-primary)', outline: 'none',
+                          width: 58, height: 64, textAlign: 'center', fontSize: '1.8rem', fontWeight: 800,
+                          background: '#0a1628', border: '2px solid #06b6d4',
+                          borderRadius: 14, color: '#ffffff', outline: 'none',
+                          boxShadow: '0 0 10px rgba(6,182,212,0.2)',
                         }}
-                        onFocus={e => { e.target.style.borderColor = 'var(--accent-cyan)'; }}
-                        onBlur={e => { e.target.style.borderColor = 'var(--border-color)'; }}
+                        onFocus={e => { e.target.style.borderColor = '#22d3ee'; e.target.style.boxShadow = '0 0 15px rgba(6,182,212,0.4)'; }}
+                        onBlur={e => { e.target.style.borderColor = '#06b6d4'; e.target.style.boxShadow = '0 0 10px rgba(6,182,212,0.2)'; }}
                       />
                     ))}
                   </div>
