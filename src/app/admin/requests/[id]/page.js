@@ -87,6 +87,42 @@ export default function RequestDetailPage({ params }) {
                         {booking.message && <div className="detail-item" style={{ gridColumn: '1/-1' }}><div className="label">Message</div><div className="value">{booking.message}</div></div>}
                         {booking.ambulance_reg_no && <div className="detail-item"><div className="label">Assigned Ambulance</div><div className="value">{booking.ambulance_reg_no}</div></div>}
                         <div className="detail-item"><div className="label">Driver</div><div className="value">{booking.driver_name || 'Not assigned'}</div></div>
+
+                        {/* Contact Patient Buttons */}
+                        <div className="detail-item" style={{ gridColumn: '1/-1' }}>
+                            <div className="label">Contact Patient</div>
+                            <div className="value" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                <a href={`tel:${booking.relative_phone}`} className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
+                                    <Phone size={14} /> Call {booking.relative_name}
+                                </a>
+                                <a
+                                    href={`https://wa.me/91${booking.relative_phone?.replace(/\D/g, '')}?text=${encodeURIComponent(
+                                        `Hello ${booking.relative_name}, this is SSAS Ambulance driver. ` +
+                                        `I have arrived at your location for booking #${booking.booking_number}. ` +
+                                        `Patient: ${booking.patient_name}. Please come out or guide us to your exact location. 🚑`
+                                    )}`}
+                                    className="btn btn-sm"
+                                    style={{ background: '#25d366', color: '#fff', textDecoration: 'none', border: 'none' }}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    💬 WhatsApp "{booking.relative_name}"
+                                </a>
+                                <a
+                                    href={`https://wa.me/91${booking.relative_phone?.replace(/\D/g, '')}?text=${encodeURIComponent(
+                                        `🚑 SSAS Update: Your ambulance for booking #${booking.booking_number} ` +
+                                        `is now at "${booking.address}, ${booking.city}". ` +
+                                        `Driver is waiting. Please be ready! 📞 Call us if needed.`
+                                    )}`}
+                                    className="btn btn-secondary btn-sm"
+                                    style={{ textDecoration: 'none' }}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    📍 Send "I Have Arrived"
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
