@@ -1495,6 +1495,25 @@ textarea.input-field {
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* FAQ Accordion */
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] summary span:last-child {
+  transform: rotate(45deg);
+}
+
+details[open] {
+  border-color: var(--accent-cyan) !important;
+}
+
 .admin-main {
   animation: fadeInUp 0.3s ease-out;
 }

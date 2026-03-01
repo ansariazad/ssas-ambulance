@@ -523,6 +523,71 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* TESTIMONIALS */}
+        <section className="section">
+          <div className="container">
+            <motion.div className="section-header" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <h2>What People Say</h2>
+              <p>Trusted by thousands of families across the region</p>
+              <div className="line" />
+            </motion.div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+              {[
+                { name: 'Priya Sharma', city: 'Delhi', rating: 5, text: 'The ambulance arrived within 10 minutes. The paramedics were professional and caring. Saved my father\'s life. Thank you SSAS!' },
+                { name: 'Rajesh Kumar', city: 'Noida', rating: 5, text: 'Best ambulance service I\'ve used. The driver knew the fastest route and got us to the hospital in record time.' },
+                { name: 'Meena Patel', city: 'Gurgaon', rating: 4, text: 'Easy online booking, real-time tracking, and excellent service. The whole experience was smooth during a stressful time.' },
+                { name: 'Amit Singh', city: 'Faridabad', rating: 5, text: '24/7 availability is what sets SSAS apart. Called at 3AM and the ambulance was at my door within 12 minutes!' },
+              ].map((t, i) => (
+                <motion.div key={i} className="glass-card" style={{ padding: '1.5rem' }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } } }}>
+                  <div style={{ display: 'flex', gap: 4, marginBottom: '0.75rem' }}>
+                    {Array(t.rating).fill(0).map((_, j) => <span key={j} style={{ color: '#fbbf24' }}>★</span>)}
+                    {Array(5 - t.rating).fill(0).map((_, j) => <span key={j} style={{ color: '#334155' }}>★</span>)}
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1rem' }}>&ldquo;{t.text}&rdquo;</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: `hsl(${i * 80}, 60%, 50%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}>
+                      {t.name[0]}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t.name}</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{t.city}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="section" style={{ background: 'var(--bg-secondary)' }}>
+          <div className="container" style={{ maxWidth: 700 }}>
+            <motion.div className="section-header" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <h2>Frequently Asked Questions</h2>
+              <p>Everything you need to know about our ambulance services</p>
+              <div className="line" />
+            </motion.div>
+            <div>
+              {[
+                { q: 'How fast can an ambulance reach me?', a: 'Our average response time is 10-15 minutes. In metro areas, we often arrive within 8 minutes.' },
+                { q: 'What types of ambulances do you offer?', a: 'We offer Basic Life Support (BLS), Advanced Life Support (ALS), Non-Emergency Transport, and Neonatal ambulances.' },
+                { q: 'How do I track my ambulance?', a: 'After booking, you receive a Booking ID. Use it on our Track page to see real-time location and status of your ambulance.' },
+                { q: 'Is the service available 24/7?', a: 'Yes! We operate 24 hours a day, 7 days a week, 365 days a year. Emergencies don\'t wait and neither do we.' },
+                { q: 'What if I need to cancel my booking?', a: 'You can cancel anytime before the ambulance arrives. Contact us via phone or WhatsApp for immediate cancellation.' },
+                { q: 'Do you accept insurance or cashless payments?', a: 'We accept cash, UPI, cards, and work with major insurance providers for cashless claims. Payment can be settled after the trip.' },
+              ].map((faq, i) => (
+                <motion.details key={i} className="glass-card" style={{ padding: '1rem 1.5rem', marginBottom: '0.75rem', cursor: 'pointer' }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { delay: i * 0.05 } } }}>
+                  <summary style={{ fontWeight: 600, fontSize: '0.95rem', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {faq.q}
+                    <span style={{ color: 'var(--accent-cyan)', fontSize: '1.2rem', transition: 'transform 0.3s' }}>+</span>
+                  </summary>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.7, marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>{faq.a}</p>
+                </motion.details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CONTACT */}
         <section id="contact" className="section" style={{ background: 'var(--bg-secondary)' }}>
           <div className="container">
