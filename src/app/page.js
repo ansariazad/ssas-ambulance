@@ -582,16 +582,35 @@ export default function HomePage() {
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '2.5rem', maxWidth: 440, width: '90%', textAlign: 'center', background: '#111827', borderRadius: 24, border: '1px solid #1e293b' }}>
                       <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
                       <h3 style={{ marginBottom: '0.5rem', color: '#ffffff', fontSize: '1.3rem' }}>Verify Your Phone</h3>
-                      <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                        A 4-digit OTP has been sent to
-                      </p>
-                      <p style={{ color: '#06b6d4', fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>
-                        📱 {formData.phone}
+                      <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                        A 4-digit OTP has been sent to <span style={{ color: '#06b6d4', fontWeight: 700 }}>📱 {formData.phone}</span>
                       </p>
 
-                      <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
-                        <p style={{ color: '#6ee7b7', fontSize: '0.8rem', margin: 0 }}>📩 Check the notification popup for your OTP code</p>
-                      </div>
+                      {/* OTP Code Display - looks like an SMS notification */}
+                      {smsNotification && (
+                        <div style={{ background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 16, padding: '14px 18px', marginBottom: '1.5rem', textAlign: 'left' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #06b6d4, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>📩</div>
+                            <div>
+                              <span style={{ fontWeight: 700, fontSize: '0.8rem', color: '#fff' }}>SSAS Verification</span>
+                              <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>SMS • just now</p>
+                            </div>
+                          </div>
+                          <p style={{ color: '#e2e8f0', fontSize: '0.85rem', margin: '0 0 10px 0' }}>Your verification code is:</p>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, margin: '8px 0' }}>
+                            {String(smsNotification.otp).split('').map((d, i) => (
+                              <span key={i} style={{ width: 42, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, color: '#fff', background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 10 }}>{d}</span>
+                            ))}
+                          </div>
+                          <p style={{ color: '#64748b', fontSize: '0.65rem', margin: '8px 0 0 0', textAlign: 'center' }}>Valid for 5 minutes • Do not share this code</p>
+                        </div>
+                      )}
+
+                      {!smsNotification && (
+                        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
+                          <p style={{ color: '#6ee7b7', fontSize: '0.8rem', margin: 0 }}>⏳ Sending OTP to your phone...</p>
+                        </div>
+                      )}
 
                       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: '1.5rem' }}>
                         {otpDigits.map((d, i) => (
@@ -760,71 +779,6 @@ export default function HomePage() {
 
       <Footer />
 
-      {/* SMS Notification Popup */}
-      <AnimatePresence>
-        {smsNotification && (
-          <motion.div
-            initial={{ y: -120, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -120, opacity: 0 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            style={{
-              position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
-              zIndex: 99999, width: '92%', maxWidth: 400,
-            }}
-          >
-            <div style={{
-              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-              borderRadius: 20, padding: '16px 20px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(20px)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: 'linear-gradient(135deg, #06b6d4, #10b981)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, flexShrink: 0,
-                }}>📩</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>SSAS Verification</span>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>now</span>
-                  </div>
-                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>SMS to {smsNotification.phone}</p>
-                </div>
-                <button
-                  onClick={() => setSmsNotification(null)}
-                  style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.2rem', padding: 4 }}
-                >×</button>
-              </div>
-              <div style={{
-                background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.2)',
-                borderRadius: 14, padding: '14px 18px',
-              }}>
-                <p style={{ color: '#e2e8f0', fontSize: '0.9rem', margin: '0 0 8px 0', lineHeight: 1.5 }}>
-                  Your SSAS verification code is:
-                </p>
-                <div style={{
-                  display: 'flex', justifyContent: 'center', gap: 8, margin: '8px 0',
-                }}>
-                  {String(smsNotification.otp).split('').map((d, i) => (
-                    <span key={i} style={{
-                      width: 44, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.6rem', fontWeight: 800, color: '#fff',
-                      background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)',
-                      borderRadius: 10,
-                    }}>{d}</span>
-                  ))}
-                </div>
-                <p style={{ color: '#64748b', fontSize: '0.7rem', margin: '8px 0 0 0', textAlign: 'center' }}>
-                  Valid for 5 minutes. Do not share this code.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }
