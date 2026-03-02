@@ -57,6 +57,77 @@ export default function HomePage() {
   const [otpCode, setOtpCode] = useState('');
   const [smsNotification, setSmsNotification] = useState(null);
 
+  // GPS, Hospital, Fare, ETA State
+  const [userCoords, setUserCoords] = useState(null);
+  const [detectingGPS, setDetectingGPS] = useState(false);
+  const [nearbyHospitals, setNearbyHospitals] = useState([]);
+  const [selectedHospital, setSelectedHospital] = useState(null);
+  const [loadingHospitals, setLoadingHospitals] = useState(false);
+  const [fareEstimate, setFareEstimate] = useState(null);
+
+  // Fare pricing per ambulance type
+  const farePricing = { 1: { base: 500, perKm: 25, name: 'BLS' }, 2: { base: 1500, perKm: 40, name: 'ALS' }, 3: { base: 300, perKm: 15, name: 'Non-Emergency' }, 4: { base: 2000, perKm: 50, name: 'Neonatal' } };
+
+  // Haversine distance formula
+  const calcDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  // GPS Auto-Detect
+  const detectLocation = async () => {
+    if (!navigator.geolocation) { toast('GPS not supported.', 'error'); return; }
+    setDetectingGPS(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserCoords({ lat: latitude, lng: longitude });
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`, { headers: { 'User-Agent': 'SSAS/1.0' } });
+          const data = await res.json();
+          const addr = data.address || {};
+          const road = [addr.road, addr.neighbourhood, addr.suburb].filter(Boolean).join(', ');
+          setFormData(prev => ({ ...prev, address: road || data.display_name?.split(',').slice(0, 2).join(',') || '', city: addr.city || addr.town || addr.village || '', state: addr.state || '' }));
+          toast('Location detected!', 'success');
+          findNearbyHospitals(latitude, longitude);
+        } catch { toast('Could not get address.', 'error'); }
+        setDetectingGPS(false);
+      },
+      () => { toast('Location access denied.', 'error'); setDetectingGPS(false); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  // Find Nearby Hospitals
+  const findNearbyHospitals = async (lat, lng) => {
+    setLoadingHospitals(true);
+    try {
+      const query = `[out:json];node[amenity=hospital](around:10000,${lat},${lng});out body 10;`;
+      const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      const hospitals = (data.elements || []).map(h => ({ name: h.tags?.name || 'Hospital', lat: h.lat, lng: h.lon, distance: calcDistance(lat, lng, h.lat, h.lon) })).sort((a, b) => a.distance - b.distance).slice(0, 5);
+      setNearbyHospitals(hospitals);
+      if (hospitals.length > 0) setSelectedHospital(hospitals[0]);
+    } catch { setNearbyHospitals([]); }
+    setLoadingHospitals(false);
+  };
+
+  // Recalculate fare when ambulance type or hospital changes
+  useEffect(() => {
+    if (selectedHospital && formData.ambulancetype) {
+      const pricing = farePricing[parseInt(formData.ambulancetype)];
+      if (pricing) {
+        const dist = selectedHospital.distance;
+        const fare = Math.round(pricing.base + pricing.perKm * dist);
+        const eta = Math.max(8, Math.round(dist * 2.5));
+        setFareEstimate({ fare, distance: dist.toFixed(1), eta, typeName: pricing.name, hospitalName: selectedHospital.name });
+      }
+    } else { setFareEstimate(null); }
+  }, [selectedHospital, formData.ambulancetype]);
+
   useEffect(() => {
     fetch('/api/pages')
       .then(r => r.json())
@@ -197,6 +268,9 @@ export default function HomePage() {
         const driverInfo = data.assigned
           ? `\n👤 *Driver:* ${data.driverName}\n🚑 *Ambulance:* ${data.ambulanceReg}\n📌 *Status:* Assigned & dispatched!`
           : `\n📌 *Status:* Received — assigning driver shortly`;
+        const fareInfo = fareEstimate
+          ? `\n\n💰 *Estimated Fare:* ₹${fareEstimate.fare} (${fareEstimate.typeName}, ~${fareEstimate.distance}km)\n⏱️ *ETA:* ~${fareEstimate.eta} minutes\n🏥 *Hospital:* ${fareEstimate.hospitalName}`
+          : '';
         const whatsappMsg = encodeURIComponent(
           `🚑 *SSAS - Booking Confirmed!*\n\n` +
           `Hello *${formData.rname}*,\n\n` +
@@ -207,7 +281,7 @@ export default function HomePage() {
           `• Date: ${formData.hdate}\n` +
           `• Time: ${formData.htime}\n` +
           `• Pickup: ${formData.address}, ${formData.city}, ${formData.state}` +
-          driverInfo + `\n\n` +
+          driverInfo + fareInfo + `\n\n` +
           `🔍 *Track your ambulance:*\n${trackUrl}\n\n` +
           `Use Booking ID *#${data.bookingNumber}* to track status.\n\n` +
           `For emergencies call: 📞 7208434724\n` +
@@ -438,8 +512,8 @@ export default function HomePage() {
                       </select>
                     </div>
                     <div className="input-group">
-                      <label>Address *</label>
-                      <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Pickup address" required />
+                      <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>Address * <button type="button" onClick={detectLocation} disabled={detectingGPS} style={{ background: 'linear-gradient(135deg, #06b6d4, #10b981)', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 8, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{detectingGPS ? '⏳ Detecting...' : '📍 Detect My Location'}</button></label>
+                      <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Pickup address (or use Detect button)" required />
                     </div>
                     <div className="input-group">
                       <label>City *</label>
@@ -449,6 +523,40 @@ export default function HomePage() {
                       <label>State *</label>
                       <input className="input-field" name="state" value={formData.state} onChange={handleChange} placeholder="Enter state" required />
                     </div>
+
+                    {/* Nearby Hospitals */}
+                    {(nearbyHospitals.length > 0 || loadingHospitals) && (
+                      <div className="input-group form-full">
+                        <label>🏥 Nearest Hospitals {loadingHospitals && <span style={{ color: '#06b6d4', fontSize: '0.75rem', fontWeight: 400 }}>(searching...)</span>}</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {nearbyHospitals.map((h, i) => (
+                            <button key={i} type="button" onClick={() => setSelectedHospital(h)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, border: selectedHospital === h ? '2px solid #06b6d4' : '1px solid rgba(148,163,184,0.2)', background: selectedHospital === h ? 'rgba(6,182,212,0.1)' : 'rgba(30,41,59,0.5)', color: '#e2e8f0', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', transition: 'all 0.2s' }}>
+                              <span style={{ fontWeight: selectedHospital === h ? 700 : 400 }}>🏥 {h.name}</span>
+                              <span style={{ color: '#06b6d4', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap', marginLeft: 12 }}>{h.distance.toFixed(1)} km</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Fare + ETA Card */}
+                    {fareEstimate && (
+                      <div style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(6,182,212,0.08), rgba(16,185,129,0.08))', border: '1px solid rgba(6,182,212,0.25)', borderRadius: 16, padding: '16px 20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                          <div>
+                            <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>💰 Estimated Fare</p>
+                            <p style={{ color: '#10b981', fontSize: '1.6rem', fontWeight: 800, margin: '4px 0' }}>₹{fareEstimate.fare}</p>
+                            <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>{fareEstimate.typeName} • ~{fareEstimate.distance} km to {fareEstimate.hospitalName}</p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>⏱️ ETA</p>
+                            <p style={{ color: '#06b6d4', fontSize: '1.6rem', fontWeight: 800, margin: '4px 0' }}>~{fareEstimate.eta} min</p>
+                            <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>🚑 Ambulance arrival</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="input-group form-full">
                       <label>Message (Optional)</label>
                       <textarea className="input-field" name="message" value={formData.message} onChange={handleChange} placeholder="Any special instructions..." rows={4} />
