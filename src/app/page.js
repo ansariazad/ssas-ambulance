@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { generateBookingPDF } from '@/lib/export';
 import { motion } from 'framer-motion';
 import { Heart, Pill, Thermometer, Baby, MapPin, Mail, Phone, ChevronRight, Shield, Clock, Zap } from 'lucide-react';
 import Header from '@/components/Header';
@@ -99,6 +100,14 @@ export default function HomePage() {
         setOtpDigits(['', '', '', '']);
         setOtpTimer(300); // 5 min
         setTimeout(() => document.getElementById('otp-0')?.focus(), 200);
+
+        // Send OTP via WhatsApp to the user's phone
+        const cleanPhone = phone.replace(/\D/g, '');
+        const waPhone = cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone;
+        const otpMsg = encodeURIComponent(
+          `🔐 *SSAS - OTP Verification*\n\nYour OTP is: *${data.otp}*\n\nEnter this code on the booking page to confirm your ambulance booking.\n\n⏱️ Valid for 5 minutes.\n_Do not share this code with anyone._`
+        );
+        window.open(`https://wa.me/${waPhone}?text=${otpMsg}`, '_blank');
       } else {
         toast(data.error || 'Failed to send OTP.', 'error');
       }
@@ -149,6 +158,27 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (res.ok) {
+        // Build booking object for PDF
+        const bookingObj = {
+          booking_number: data.bookingNumber,
+          patient_name: formData.pname,
+          relative_name: formData.rname,
+          relative_phone: formData.phone,
+          relative_email: formData.email,
+          hiring_date: formData.hdate,
+          hiring_time: formData.htime,
+          ambulance_type: parseInt(formData.ambulancetype),
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          status: data.assigned ? 'Assigned' : 'New',
+          driver_name: data.driverName || null,
+          ambulance_reg_no: data.ambulanceReg || null,
+        };
+
+        // Auto-download booking PDF
+        try { generateBookingPDF(bookingObj); } catch (e) { console.error('PDF error:', e); }
+
         // Store success data for confirmation screen
         setBookingSuccess({
           bookingNumber: data.bookingNumber,
@@ -440,17 +470,16 @@ export default function HomePage() {
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '2.5rem', maxWidth: 440, width: '90%', textAlign: 'center', background: '#111827', borderRadius: 24, border: '1px solid #1e293b' }}>
                       <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
                       <h3 style={{ marginBottom: '0.5rem', color: '#ffffff', fontSize: '1.3rem' }}>Verify Your Phone</h3>
-                      <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                        OTP sent to <b style={{ color: '#06b6d4' }}>{formData.phone}</b>
+                      <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                        OTP sent via WhatsApp to
+                      </p>
+                      <p style={{ color: '#06b6d4', fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+                        📱 {formData.phone}
                       </p>
 
-                      {/* Show OTP clearly */}
-                      <div style={{ background: '#065f46', border: '1px solid #10b981', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem', display: 'inline-block' }}>
-                        <span style={{ color: '#6ee7b7', fontSize: '0.8rem' }}>Your OTP: </span>
-                        <span style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 800, letterSpacing: 6 }}>{otpCode}</span>
+                      <div style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
+                        <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0 }}>Check your WhatsApp for the 4-digit code</p>
                       </div>
-
-                      <p style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '1rem' }}>Enter this code below to confirm your booking</p>
 
                       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: '1.5rem' }}>
                         {otpDigits.map((d, i) => (
