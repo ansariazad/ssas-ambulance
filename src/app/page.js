@@ -421,7 +421,7 @@ export default function HomePage() {
                     </div>
                     <div className="input-group">
                       <label>Hiring Date *</label>
-                      <input className="input-field" name="hdate" type="date" value={formData.hdate} onChange={handleChange} required />
+                      <input className="input-field" name="hdate" type="date" value={formData.hdate} onChange={handleChange} required min={new Date().toISOString().split('T')[0]} max={new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0]} />
                     </div>
                     <div className="input-group">
                       <label>Hiring Time *</label>
