@@ -15,11 +15,43 @@ export default function RealtimeNotifications({ bookingNumber }) {
     const [notifications, setNotifications] = useState([]);
     const [showPanel, setShowPanel] = useState(false);
     const [unread, setUnread] = useState(0);
+    const [loaded, setLoaded] = useState(false);
 
+    // Fetch existing tracking history on mount
     useEffect(() => {
         if (!bookingNumber) return;
 
-        // Subscribe to real-time changes on tracking_history
+        async function fetchExisting() {
+            try {
+                const { data, error } = await supabase
+                    .from('tracking_history')
+                    .select('*')
+                    .eq('booking_number', bookingNumber)
+                    .order('created_at', { ascending: false });
+
+                if (!error && data && data.length > 0) {
+                    const existing = data.map(item => ({
+                        id: item.id,
+                        status: item.status,
+                        remark: item.remark,
+                        time: new Date(item.created_at).toLocaleTimeString(),
+                    }));
+                    setNotifications(existing);
+                    setUnread(existing.length);
+                }
+            } catch (err) {
+                console.error('Failed to fetch tracking history:', err);
+            }
+            setLoaded(true);
+        }
+
+        fetchExisting();
+    }, [bookingNumber]);
+
+    // Subscribe to real-time changes
+    useEffect(() => {
+        if (!bookingNumber) return;
+
         const channel = supabase
             .channel(`tracking-${bookingNumber}`)
             .on('postgres_changes', {
@@ -94,7 +126,7 @@ export default function RealtimeNotifications({ bookingNumber }) {
                         </div>
                         {notifications.length === 0 ? (
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0' }}>
-                                Waiting for live updates...
+                                {loaded ? 'No updates yet for this booking.' : 'Loading updates...'}
                             </p>
                         ) : (
                             notifications.map(n => (

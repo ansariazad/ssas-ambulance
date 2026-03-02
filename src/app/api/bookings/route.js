@@ -100,12 +100,27 @@ export async function POST(request) {
             if (result.error) throw result.error;
         }
 
+        // Build admin WhatsApp notification URL
+        const ADMIN_PHONE = '917208434724'; // Admin phone number
+        const adminMsg = encodeURIComponent(
+            `🚑 *NEW BOOKING ALERT!*\n\n` +
+            `📋 Booking: *#${bookingNumber}*\n` +
+            `👤 Patient: ${pname}\n` +
+            `📞 Contact: ${phone} (${rname})\n` +
+            `📍 Pickup: ${address}, ${city}, ${state}\n` +
+            `📅 Date: ${hdate} at ${htime}\n` +
+            `🚑 Type: ${ambulancetype}\n` +
+            (assignment ? `✅ Driver: ${assignment.driver_name} | Ambulance: ${assignment.ambulance_reg_no}` : `⏳ No driver assigned yet`) +
+            `\n\n_Sent from SSAS Booking System_`
+        );
+
         return NextResponse.json({
             bookingNumber,
             message: 'Booking created successfully.',
             assigned: assignment ? true : false,
             driverName: assignment?.driver_name || null,
             ambulanceReg: assignment?.ambulance_reg_no || null,
+            adminWhatsappUrl: `https://wa.me/${ADMIN_PHONE}?text=${adminMsg}`,
         });
     } catch (error) {
         console.error(error);

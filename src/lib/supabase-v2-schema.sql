@@ -30,7 +30,7 @@ UPDATE admins SET role = 'super_admin' WHERE id = 1;
 
 -- 8. Add sample dispatcher and driver admins
 INSERT INTO admins (admin_name, username, mobile_number, email, password, role) 
-VALUES ('Dispatcher One', 'dispatcher', '9876543210', 'dispatch@ssas.com', '$2b$10$Y7.55g4eIq0mw54.hxYCA.CWND6F7ouT17./rd3hvgr18dRjOnW3y', 'dispatcher')
+VALUES ('Azad Ansari', 'dispatcher', '7208434724', 'dispatch@ssas.com', '$2b$10$Y7.55g4eIq0mw54.hxYCA.CWND6F7ouT17./rd3hvgr18dRjOnW3y', 'dispatcher')
 ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO admins (admin_name, username, mobile_number, email, password, role) 

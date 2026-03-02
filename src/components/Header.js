@@ -33,7 +33,7 @@ export default function Header() {
 
             {/* WhatsApp Float */}
             <a
-                href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20an%20ambulance%20urgently!"
+                href="https://wa.me/917208434724?text=Hi%2C%20I%20need%20an%20ambulance%20urgently!"
                 className="whatsapp-float"
                 target="_blank"
                 rel="noopener noreferrer"

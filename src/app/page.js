@@ -610,7 +610,7 @@ export default function HomePage() {
               <motion.div className="glass-card contact-card" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ ...fadeUp, visible: { ...fadeUp.visible, transition: { duration: 0.6, delay: 0.2 } } }}>
                 <div className="contact-icon"><Phone size={24} /></div>
                 <h4>Call Us</h4>
-                <p>{contact.mobile_number || '7894561236'}</p>
+                <p>{contact.mobile_number || '7208434724'}</p>
               </motion.div>
             </div>
           </div>
