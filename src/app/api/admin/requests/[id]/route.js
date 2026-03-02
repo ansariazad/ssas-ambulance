@@ -45,8 +45,12 @@ export async function PUT(request, { params }) {
             remark, status,
         });
 
-        if (ambulance_reg_no) {
-            await supabase.from('ambulances').update({ status, updated_at: new Date().toISOString() }).eq('reg_number', ambulance_reg_no);
+        if (ambulance_reg_no || booking.ambulance_reg_no) {
+            const regNo = ambulance_reg_no || booking.ambulance_reg_no;
+            // Release ambulance back to Available when booking is done
+            const finalStatuses = ['Reached', 'Rejected', 'Completed', 'Cancelled'];
+            const newAmbStatus = finalStatuses.includes(status) ? 'Available' : status;
+            await supabase.from('ambulances').update({ status: newAmbStatus, updated_at: new Date().toISOString() }).eq('reg_number', regNo);
         }
 
         return NextResponse.json({ message: 'Status updated.' });

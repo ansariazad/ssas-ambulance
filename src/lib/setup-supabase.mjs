@@ -37,12 +37,17 @@ async function seedData() {
         email: 'admin@gmail.com', password: hashedPassword
     }, { onConflict: 'username' });
 
-    // Seed ambulances
+    // Seed ambulances (9 drivers)
     const ambulances = [
-        { ambulance_type: 1, reg_number: 'DL14RT5678', driver_name: 'Joginder Singh', driver_contact: '4567891236', status: 'Pickup' },
-        { ambulance_type: 2, reg_number: 'DL15RT5678', driver_name: 'Kamal Yadav', driver_contact: '7894563219', status: 'Assigned' },
-        { ambulance_type: 1, reg_number: 'DL14RT5679', driver_name: 'Ramesh Singh', driver_contact: '2567891231', status: 'Pickup' },
-        { ambulance_type: 2, reg_number: 'UP15RT5612', driver_name: 'Toshib Yadav', driver_contact: '6894563219', status: null },
+        { ambulance_type: 1, reg_number: 'MH02AB1234', driver_name: 'Rahul Patil', driver_contact: '9876543201', status: 'Available' },
+        { ambulance_type: 2, reg_number: 'MH02CD5678', driver_name: 'Vikram Sharma', driver_contact: '9876543202', status: 'Available' },
+        { ambulance_type: 1, reg_number: 'MH04EF9012', driver_name: 'Sanjay Gupta', driver_contact: '9876543203', status: 'Available' },
+        { ambulance_type: 3, reg_number: 'MH01GH3456', driver_name: 'Arjun Deshmukh', driver_contact: '9876543204', status: 'Available' },
+        { ambulance_type: 4, reg_number: 'MH03IJ7890', driver_name: 'Nikhil Joshi', driver_contact: '9876543205', status: 'Available' },
+        { ambulance_type: 1, reg_number: 'MH02KL2345', driver_name: 'Deepak Yadav', driver_contact: '9876543206', status: 'Available' },
+        { ambulance_type: 2, reg_number: 'MH04MN6789', driver_name: 'Rohan Kulkarni', driver_contact: '9876543207', status: 'Available' },
+        { ambulance_type: 1, reg_number: 'MH01OP1122', driver_name: 'Akash Jadhav', driver_contact: '9876543208', status: 'Available' },
+        { ambulance_type: 3, reg_number: 'MH03QR3344', driver_name: 'Kunal Thakur', driver_contact: '9876543209', status: 'Available' },
     ];
     await supabase.from('ambulances').upsert(ambulances, { onConflict: 'reg_number' });
 

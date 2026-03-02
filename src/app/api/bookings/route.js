@@ -17,21 +17,35 @@ async function geocodeAddress(address, city, state) {
     return null;
 }
 
-// Find an available ambulance and driver
+// Find an available ambulance and driver (auto-assign)
 async function autoAssign(ambulanceType) {
     try {
-        // Find available ambulance matching type
-        let query = supabase.from('ambulances').select('*').eq('status', 'Available');
-        if (ambulanceType) query = query.eq('type', ambulanceType);
-        const { data: ambulances } = await query.limit(1);
+        // First try: match ambulance type + Available status
+        let { data: ambulances } = await supabase
+            .from('ambulances')
+            .select('*')
+            .eq('ambulance_type', ambulanceType)
+            .or('status.eq.Available,status.is.null')
+            .limit(1);
+
+        // Fallback: any available ambulance regardless of type
+        if (!ambulances || ambulances.length === 0) {
+            const result = await supabase
+                .from('ambulances')
+                .select('*')
+                .or('status.eq.Available,status.is.null')
+                .limit(1);
+            ambulances = result.data;
+        }
 
         if (ambulances && ambulances.length > 0) {
             const ambulance = ambulances[0];
-            // Mark ambulance as busy
-            await supabase.from('ambulances').update({ status: 'On Trip' }).eq('id', ambulance.id);
+            // Mark ambulance as assigned (busy)
+            await supabase.from('ambulances').update({ status: 'Assigned' }).eq('id', ambulance.id);
             return {
                 assigned_ambulance: ambulance.id,
                 driver_name: ambulance.driver_name,
+                driver_contact: ambulance.driver_contact,
                 ambulance_reg_no: ambulance.reg_number,
             };
         }
