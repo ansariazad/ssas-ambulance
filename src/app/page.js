@@ -60,6 +60,7 @@ export default function HomePage() {
   // GPS, Hospital, Fare, ETA State
   const [userCoords, setUserCoords] = useState(null);
   const [detectingGPS, setDetectingGPS] = useState(false);
+  const locationDetected = useRef(false);
   const [nearbyHospitals, setNearbyHospitals] = useState([]);
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
@@ -108,7 +109,7 @@ export default function HomePage() {
       const query = `[out:json];node[amenity=hospital](around:10000,${lat},${lng});out body 10;`;
       const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
       const data = await res.json();
-      const hospitals = (data.elements || []).map(h => ({ name: h.tags?.name || 'Hospital', lat: h.lat, lng: h.lon, distance: calcDistance(lat, lng, h.lat, h.lon) })).sort((a, b) => a.distance - b.distance).slice(0, 5);
+      const hospitals = (data.elements || []).map(h => ({ name: h.tags?.name || 'Hospital', lat: h.lat, lng: h.lon, distance: calcDistance(lat, lng, h.lat, h.lon) })).sort((a, b) => a.distance - b.distance).slice(0, 3);
       setNearbyHospitals(hospitals);
       if (hospitals.length > 0) setSelectedHospital(hospitals[0]);
     } catch { setNearbyHospitals([]); }
@@ -137,6 +138,12 @@ export default function HomePage() {
         if (about) setAboutText(about.page_description);
         if (cont) setContact(cont);
       }).catch(() => { });
+
+    // Auto-detect location on page visit
+    if (!locationDetected.current && navigator.geolocation) {
+      locationDetected.current = true;
+      setTimeout(() => detectLocation(), 1500); // slight delay for better UX
+    }
   }, []);
 
   // OTP countdown timer
