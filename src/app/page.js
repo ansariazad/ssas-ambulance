@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { generateBookingPDF } from '@/lib/export';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Pill, Thermometer, Baby, MapPin, Mail, Phone, ChevronRight, Shield, Clock, Zap } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -55,6 +55,7 @@ export default function HomePage() {
   const [otpTimer, setOtpTimer] = useState(0);
   const [otpSending, setOtpSending] = useState(false);
   const [otpCode, setOtpCode] = useState('');
+  const [smsNotification, setSmsNotification] = useState(null);
 
   useEffect(() => {
     fetch('/api/pages')
@@ -101,13 +102,9 @@ export default function HomePage() {
         setOtpTimer(300); // 5 min
         setTimeout(() => document.getElementById('otp-0')?.focus(), 200);
 
-        // Send OTP via WhatsApp to the user's phone
-        const cleanPhone = phone.replace(/\D/g, '');
-        const waPhone = cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone;
-        const otpMsg = encodeURIComponent(
-          `🔐 *SSAS - OTP Verification*\n\nYour OTP is: *${data.otp}*\n\nEnter this code on the booking page to confirm your ambulance booking.\n\n⏱️ Valid for 5 minutes.\n_Do not share this code with anyone._`
-        );
-        window.open(`https://wa.me/${waPhone}?text=${otpMsg}`, '_blank');
+        // Show simulated SMS notification popup with OTP
+        setSmsNotification({ phone: formData.phone, otp: data.otp });
+        setTimeout(() => setSmsNotification(null), 10000); // auto-hide after 10s
       } else {
         toast(data.error || 'Failed to send OTP.', 'error');
       }
@@ -471,14 +468,14 @@ export default function HomePage() {
                       <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
                       <h3 style={{ marginBottom: '0.5rem', color: '#ffffff', fontSize: '1.3rem' }}>Verify Your Phone</h3>
                       <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                        OTP sent via WhatsApp to
+                        A 4-digit OTP has been sent to
                       </p>
-                      <p style={{ color: '#06b6d4', fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+                      <p style={{ color: '#06b6d4', fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>
                         📱 {formData.phone}
                       </p>
 
-                      <div style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
-                        <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0 }}>Check your WhatsApp for the 4-digit code</p>
+                      <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
+                        <p style={{ color: '#6ee7b7', fontSize: '0.8rem', margin: 0 }}>📩 Check the notification popup for your OTP code</p>
                       </div>
 
                       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: '1.5rem' }}>
@@ -647,6 +644,72 @@ export default function HomePage() {
       </main>
 
       <Footer />
+
+      {/* SMS Notification Popup */}
+      <AnimatePresence>
+        {smsNotification && (
+          <motion.div
+            initial={{ y: -120, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -120, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            style={{
+              position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+              zIndex: 99999, width: '92%', maxWidth: 400,
+            }}
+          >
+            <div style={{
+              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+              borderRadius: 20, padding: '16px 20px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: 'linear-gradient(135deg, #06b6d4, #10b981)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, flexShrink: 0,
+                }}>📩</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>SSAS Verification</span>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>now</span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>SMS to {smsNotification.phone}</p>
+                </div>
+                <button
+                  onClick={() => setSmsNotification(null)}
+                  style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.2rem', padding: 4 }}
+                >×</button>
+              </div>
+              <div style={{
+                background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.2)',
+                borderRadius: 14, padding: '14px 18px',
+              }}>
+                <p style={{ color: '#e2e8f0', fontSize: '0.9rem', margin: '0 0 8px 0', lineHeight: 1.5 }}>
+                  Your SSAS verification code is:
+                </p>
+                <div style={{
+                  display: 'flex', justifyContent: 'center', gap: 8, margin: '8px 0',
+                }}>
+                  {String(smsNotification.otp).split('').map((d, i) => (
+                    <span key={i} style={{
+                      width: 44, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1.6rem', fontWeight: 800, color: '#fff',
+                      background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)',
+                      borderRadius: 10,
+                    }}>{d}</span>
+                  ))}
+                </div>
+                <p style={{ color: '#64748b', fontSize: '0.7rem', margin: '8px 0 0 0', textAlign: 'center' }}>
+                  Valid for 5 minutes. Do not share this code.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
