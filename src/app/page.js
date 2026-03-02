@@ -210,7 +210,7 @@ export default function HomePage() {
           driverInfo + `\n\n` +
           `🔍 *Track your ambulance:*\n${trackUrl}\n\n` +
           `Use Booking ID *#${data.bookingNumber}* to track status.\n\n` +
-          `For emergencies call: 📞 108\n` +
+          `For emergencies call: 📞 7208434724\n` +
           `_SSAS - Smart & Secure Ambulance Services_`
         );
         window.open(`https://wa.me/${whatsappPhone}?text=${whatsappMsg}`, '_blank');
@@ -265,8 +265,8 @@ export default function HomePage() {
             <a href="/track" className="btn btn-secondary btn-lg">
               Track Ambulance
             </a>
-            <a href="tel:108" className="btn btn-lg" style={{ background: '#dc2626', color: '#fff', border: 'none', animation: 'pulse 2s infinite' }}>
-              🆘 Call 108
+            <a href="tel:+917208434724" className="btn btn-lg" style={{ background: '#dc2626', color: '#fff', border: 'none', animation: 'pulse 2s infinite' }}>
+              🆘 Call SSAS Now
             </a>
           </div>
         </motion.div>
