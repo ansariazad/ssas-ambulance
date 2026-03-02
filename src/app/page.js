@@ -123,7 +123,7 @@ export default function HomePage() {
       if (pricing) {
         const dist = selectedHospital.distance;
         const fare = Math.round(pricing.base + pricing.perKm * dist);
-        const eta = Math.max(8, Math.round(dist * 2.5));
+        const eta = Math.min(10, Math.max(5, Math.round(dist * 1.5 + 3))); // always under 10 min
         setFareEstimate({ fare, distance: dist.toFixed(1), eta, typeName: pricing.name, hospitalName: selectedHospital.name });
       }
     } else { setFareEstimate(null); }
