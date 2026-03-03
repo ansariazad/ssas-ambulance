@@ -154,15 +154,68 @@ export default function HomePage() {
     }
   }, [otpTimer]);
 
+  // Form Validation State
+  const [errors, setErrors] = useState({});
+
+  // Validation rules
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'pname': case 'rname':
+        if (!value.trim()) return 'This field is required';
+        if (value.trim().length < 2) return 'Must be at least 2 characters';
+        if (!/^[a-zA-Z\s]+$/.test(value.trim())) return 'Only letters allowed';
+        return '';
+      case 'phone':
+        const digits = value.replace(/\D/g, '');
+        if (!digits) return 'Phone number is required';
+        if (digits.length !== 10) return 'Must be exactly 10 digits';
+        if (!/^[6-9]/.test(digits)) return 'Must start with 6, 7, 8, or 9';
+        return '';
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format';
+        return '';
+      case 'hdate':
+        if (!value) return 'Date is required';
+        return '';
+      case 'htime':
+        if (!value) return 'Time is required';
+        return '';
+      case 'ambulancetype':
+        if (!value) return 'Select an ambulance type';
+        return '';
+      case 'address':
+        if (!value.trim()) return 'Address is required';
+        if (value.trim().length < 5) return 'Enter a complete address';
+        return '';
+      case 'city':
+        if (!value.trim()) return 'City is required';
+        return '';
+      case 'state':
+        if (!value.trim()) return 'State is required';
+        return '';
+      default: return '';
+    }
+  };
+
   // Step 1: Validate form, request OTP
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     const { pname, rname, phone, hdate, htime, ambulancetype, address, city, state } = formData;
-    if (!pname || !rname || !phone || !hdate || !htime || !ambulancetype || !address || !city || !state) {
-      toast('Please fill all required fields.', 'error'); return;
+
+    // Validate all fields
+    const newErrors = {};
+    const fieldsToValidate = ['pname', 'rname', 'phone', 'hdate', 'htime', 'ambulancetype', 'address', 'city', 'state'];
+    fieldsToValidate.forEach(field => {
+      const err = validateField(field, formData[field]);
+      if (err) newErrors[field] = err;
+    });
+    if (formData.email) {
+      const emailErr = validateField('email', formData.email);
+      if (emailErr) newErrors.email = emailErr;
     }
-    if (phone.replace(/\D/g, '').length < 10) {
-      toast('Enter a valid 10-digit phone number.', 'error'); return;
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      toast('Please fix the errors in the form.', 'error'); return;
     }
 
     setOtpSending(true);
@@ -308,7 +361,20 @@ export default function HomePage() {
     setSubmitting(false);
   };
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    // Phone: allow only digits, max 10
+    if (name === 'phone') {
+      const digits = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, phone: digits }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    // Clear error on change
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
 
   const features = [
     { icon: <Heart size={28} />, title: 'Life Support', desc: 'Advanced life-saving equipment onboard every unit for critical care.' },
@@ -486,19 +552,23 @@ export default function HomePage() {
                   <div className="form-grid">
                     <div className="input-group">
                       <label>Patient Name *</label>
-                      <input className="input-field" name="pname" value={formData.pname} onChange={handleChange} placeholder="Patient full name" required />
+                      <input className="input-field" name="pname" value={formData.pname} onChange={handleChange} placeholder="Patient full name" required style={errors.pname ? { border: '1px solid #ef4444' } : {}} />
+                      {errors.pname && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: 4 }}>{errors.pname}</span>}
                     </div>
                     <div className="input-group">
                       <label>Relative Name *</label>
-                      <input className="input-field" name="rname" value={formData.rname} onChange={handleChange} placeholder="Contact person name" required />
+                      <input className="input-field" name="rname" value={formData.rname} onChange={handleChange} placeholder="Contact person name" required style={errors.rname ? { border: '1px solid #ef4444' } : {}} />
+                      {errors.rname && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: 4 }}>{errors.rname}</span>}
                     </div>
                     <div className="input-group">
                       <label>Contact Number *</label>
-                      <input className="input-field" name="phone" value={formData.phone} onChange={handleChange} placeholder="10-digit mobile number" required />
+                      <input className="input-field" name="phone" type="tel" inputMode="numeric" value={formData.phone} onChange={handleChange} placeholder="10-digit mobile number" required maxLength={10} style={errors.phone ? { border: '1px solid #ef4444' } : {}} />
+                      {errors.phone && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: 4 }}>{errors.phone}</span>}
                     </div>
                     <div className="input-group">
                       <label>Email (for notifications)</label>
-                      <input className="input-field" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" />
+                      <input className="input-field" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" style={errors.email ? { border: '1px solid #ef4444' } : {}} />
+                      {errors.email && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: 4 }}>{errors.email}</span>}
                     </div>
                     <div className="input-group">
                       <label>Hiring Date *</label>
@@ -510,13 +580,14 @@ export default function HomePage() {
                     </div>
                     <div className="input-group">
                       <label>Ambulance Type *</label>
-                      <select className="input-field" name="ambulancetype" value={formData.ambulancetype} onChange={handleChange} required>
+                      <select className="input-field" name="ambulancetype" value={formData.ambulancetype} onChange={handleChange} required style={errors.ambulancetype ? { border: '1px solid #ef4444' } : {}}>
                         <option value="">Select type</option>
-                        <option value="1">Basic Life Support (BLS)</option>
-                        <option value="2">Advanced Life Support (ALS)</option>
-                        <option value="3">Non-Emergency Transport</option>
-                        <option value="4">Neonatal</option>
+                        <option value="1">Basic Life Support (BLS) — ₹500 base</option>
+                        <option value="2">Advanced Life Support (ALS) — ₹1,500 base</option>
+                        <option value="3">Non-Emergency Transport — ₹300 base</option>
+                        <option value="4">Neonatal — ₹2,000 base</option>
                       </select>
+                      {errors.ambulancetype && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: 4 }}>{errors.ambulancetype}</span>}
                     </div>
                     <div className="input-group">
                       <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>Address * <button type="button" onClick={detectLocation} disabled={detectingGPS} style={{ background: 'linear-gradient(135deg, #06b6d4, #10b981)', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 8, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{detectingGPS ? '⏳ Detecting...' : '📍 Detect My Location'}</button></label>
