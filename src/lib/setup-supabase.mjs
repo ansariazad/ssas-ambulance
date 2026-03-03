@@ -77,7 +77,7 @@ async function seedData() {
     // Seed pages
     const pages = [
         { page_type: 'aboutus', page_title: 'About Us', page_description: "We prioritize the well-being of our patients above all else. That's why we offer top-notch ambulance services to ensure swift and secure medical transportation whenever the need arises. Our dedicated team of skilled paramedics and drivers is equipped with state-of-the-art ambulances, ready to respond to emergencies 24/7." },
-        { page_type: 'contactus', page_title: 'Contact Us', page_description: '#890 KFG Apartment, Gauri Kunj, Delhi-India.', email: 'test@gmail.com', mobile_number: '7208434724' },
+        { page_type: 'contactus', page_title: 'Contact Us', page_description: 'Andheri East, Mumbai, Maharashtra - 400069', email: 'ssas.ambulance@gmail.com', mobile_number: '7208434724' },
     ];
     await supabase.from('pages').upsert(pages, { onConflict: 'page_type' });
 

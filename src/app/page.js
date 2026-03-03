@@ -326,25 +326,25 @@ export default function HomePage() {
         const whatsappPhone = phone.startsWith('91') ? phone : '91' + phone;
         const trackUrl = `${window.location.origin}/track`;
         const driverInfo = data.assigned
-          ? `\n👤 *Driver:* ${data.driverName}\n🚑 *Ambulance:* ${data.ambulanceReg}\n📌 *Status:* Assigned & dispatched!`
-          : `\n📌 *Status:* Received — assigning driver shortly`;
+          ? `\nDriver: ${data.driverName}\nAmbulance: ${data.ambulanceReg}\nStatus: Assigned & dispatched!`
+          : `\nStatus: Received — assigning driver shortly`;
         const fareInfo = fareEstimate
-          ? `\n\n💰 *Estimated Fare:* ₹${fareEstimate.fare} (${fareEstimate.typeName}, ~${fareEstimate.distance}km)\n⏱️ *ETA:* ~${fareEstimate.eta} minutes\n🏥 *Hospital:* ${fareEstimate.hospitalName}`
+          ? `\n\nEstimated Fare: ₹${fareEstimate.fare} (${fareEstimate.typeName}, ~${fareEstimate.distance}km)\nETA: ~${fareEstimate.eta} minutes\nHospital: ${fareEstimate.hospitalName}`
           : '';
         const whatsappMsg = encodeURIComponent(
-          `🚑 *SSAS - Booking Confirmed!*\n\n` +
+          `SSAS - Booking Confirmed\n\n` +
           `Hello *${formData.rname}*,\n\n` +
           `Your ambulance booking has been confirmed!\n\n` +
-          `📋 *Booking Details:*\n` +
+          `Booking Details:\n` +
           `• Booking ID: *#${data.bookingNumber}*\n` +
           `• Patient: ${formData.pname}\n` +
           `• Date: ${formData.hdate}\n` +
           `• Time: ${formData.htime}\n` +
           `• Pickup: ${formData.address}, ${formData.city}, ${formData.state}` +
           driverInfo + fareInfo + `\n\n` +
-          `🔍 *Track your ambulance:*\n${trackUrl}\n\n` +
+          `Track your ambulance:\n${trackUrl}\n\n` +
           `Use Booking ID *#${data.bookingNumber}* to track status.\n\n` +
-          `For emergencies call: 📞 7208434724\n` +
+          `For emergencies call: 7208434724\n` +
           `_SSAS - Smart & Secure Ambulance Services_`
         );
         window.open(`https://wa.me/${whatsappPhone}?text=${whatsappMsg}`, '_blank');
@@ -377,12 +377,12 @@ export default function HomePage() {
   };
 
   const features = [
-    { icon: <Heart size={28} />, title: 'Life Support', desc: 'Advanced life-saving equipment onboard every unit for critical care.' },
-    { icon: <Pill size={28} />, title: 'Medical Support', desc: 'Certified paramedics providing expert medical assistance during transit.' },
-    { icon: <Shield size={28} />, title: 'Safe Transport', desc: 'GPS-tracked vehicles ensuring the safest route to the nearest hospital.' },
-    { icon: <Zap size={28} />, title: 'Rapid Response', desc: 'Average response time under 15 minutes across all service areas.' },
-    { icon: <Thermometer size={28} />, title: 'Emergency Kit', desc: 'Fully equipped emergency kits for immediate on-site medical response.' },
-    { icon: <Baby size={28} />, title: 'NICU Support', desc: 'Specialized neonatal intensive care units for newborn emergencies.' },
+    { icon: <Heart size={28} />, title: 'Life Support', desc: 'Every ambulance has oxygen cylinders, defibrillators, and basic life support equipment ready to use.' },
+    { icon: <Pill size={28} />, title: 'Trained Paramedics', desc: 'Our paramedics are certified and can handle everything from fractures to cardiac emergencies.' },
+    { icon: <Shield size={28} />, title: 'Safe Transport', desc: 'All vehicles are GPS-tracked so you and the hospital know exactly where the ambulance is.' },
+    { icon: <Zap size={28} />, title: 'Under 10 Min', desc: 'Our average response time is 8 minutes. We keep ambulances stationed across the city.' },
+    { icon: <Thermometer size={28} />, title: 'Emergency Kit', desc: 'First-aid kits, stretchers, spinal boards — we come prepared for any situation.' },
+    { icon: <Baby size={28} />, title: 'Neonatal Care', desc: 'Dedicated NICU ambulances for newborn emergencies with incubators and monitors.' },
   ];
 
   return (
@@ -396,24 +396,24 @@ export default function HomePage() {
         <motion.div className="hero-content" initial="hidden" animate="visible" variants={fadeUp}>
           <div className="hero-badge">
             <span className="dot" />
-            24/7 Emergency Service Available
+            Available 24/7 across Mumbai
           </div>
           <h1 className="hero-title">
-            Swift & Secure<br />
-            <span className="gradient-text">Ambulance Services</span>
+            Fast Ambulance<br />
+            <span className="gradient-text">When You Need It</span>
           </h1>
           <p className="hero-subtitle">
-            Book an emergency ambulance in seconds. Our skilled paramedics and state-of-the-art vehicles ensure the fastest, safest medical transportation.
+            We started SSAS because we saw people struggling to get ambulances on time. Our team of trained paramedics and GPS-tracked ambulances reach you in under 10 minutes.
           </p>
           <div className="hero-actions">
             <a href="#booking" className="btn btn-primary btn-lg">
-              Book Ambulance <ChevronRight size={18} />
+              Book Now <ChevronRight size={18} />
             </a>
             <a href="/track" className="btn btn-secondary btn-lg">
               Track Ambulance
             </a>
             <a href="tel:+917208434724" className="btn btn-lg" style={{ background: '#dc2626', color: '#fff', border: 'none', animation: 'pulse 2s infinite' }}>
-              🆘 Call SSAS Now
+              Call Now
             </a>
           </div>
         </motion.div>
@@ -424,8 +424,8 @@ export default function HomePage() {
         <section className="section" style={{ background: 'var(--bg-secondary)' }}>
           <div className="container">
             <motion.div className="section-header" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-              <h2>Our Services</h2>
-              <p>Comprehensive emergency medical transportation solutions</p>
+              <h2>What We Offer</h2>
+              <p>Everything you need during a medical emergency, all in one place</p>
               <div className="line" />
             </motion.div>
             <div className="features-grid">
@@ -495,7 +495,7 @@ export default function HomePage() {
             {/* Booking Success Screen */}
             {bookingSuccess ? (
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-                <div style={{ width: 80, height: 80, background: 'linear-gradient(135deg, #10b981, #06b6d4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 36 }}>✅</div>
+                <div style={{ width: 80, height: 80, background: 'linear-gradient(135deg, #f77f00, #e63946)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 36 }}>✓</div>
                 <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Booking Confirmed!</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Your ambulance has been booked successfully</p>
 
@@ -506,17 +506,17 @@ export default function HomePage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>👤 Patient</span><b>{bookingSuccess.patientName}</b></div>
-                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>📞 Contact</span><b>{bookingSuccess.phone}</b></div>
+                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>Patient</span><b>{bookingSuccess.patientName}</b></div>
+                    <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>Contact</span><b>{bookingSuccess.phone}</b></div>
                     <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>📅 Date</span><b>{bookingSuccess.date}</b></div>
                     <div><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>⏰ Time</span><b>{bookingSuccess.time}</b></div>
                   </div>
 
-                  <div style={{ marginBottom: '1rem' }}><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>📍 Pickup</span><b>{bookingSuccess.address}</b></div>
+                  <div style={{ marginBottom: '1rem' }}><span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>Pickup</span><b>{bookingSuccess.address}</b></div>
 
                   {bookingSuccess.assigned && (
-                    <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12, padding: '1rem', marginBottom: '1rem' }}>
-                      <span style={{ color: '#10b981', fontSize: '0.75rem', display: 'block', marginBottom: '0.5rem' }}>🚑 Driver Assigned</span>
+                    <div style={{ background: 'rgba(247,127,0,0.1)', border: '1px solid rgba(247,127,0,0.3)', borderRadius: 12, padding: '1rem', marginBottom: '1rem' }}>
+                      <span style={{ color: '#f77f00', fontSize: '0.75rem', display: 'block', marginBottom: '0.5rem' }}>Driver Assigned</span>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <b>{bookingSuccess.driverName}</b>
                         <span style={{ color: 'var(--text-muted)' }}>{bookingSuccess.ambulanceReg}</span>
@@ -524,18 +524,18 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  <div style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 12, padding: '1rem', textAlign: 'center' }}>
-                    <span style={{ color: '#06b6d4', fontSize: '0.8rem' }}>🕒 Estimated Arrival</span>
+                  <div style={{ background: 'rgba(230,57,70,0.1)', border: '1px solid rgba(230,57,70,0.3)', borderRadius: 12, padding: '1rem', textAlign: 'center' }}>
+                    <span style={{ color: '#e63946', fontSize: '0.8rem' }}>Estimated Arrival</span>
                     <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff' }}>10-15 Minutes</div>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <a href="/track" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
-                    🔍 Track Ambulance
+                    Track Ambulance
                   </a>
                   <button className="btn btn-secondary btn-lg" onClick={() => setBookingSuccess(null)}>
-                    🚑 Book Another
+                    Book Another
                   </button>
                 </div>
               </motion.div>
@@ -590,7 +590,7 @@ export default function HomePage() {
                       {errors.ambulancetype && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: 4 }}>{errors.ambulancetype}</span>}
                     </div>
                     <div className="input-group">
-                      <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>Address * <button type="button" onClick={detectLocation} disabled={detectingGPS} style={{ background: 'linear-gradient(135deg, #06b6d4, #10b981)', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 8, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{detectingGPS ? '⏳ Detecting...' : '📍 Detect My Location'}</button></label>
+                      <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>Address * <button type="button" onClick={detectLocation} disabled={detectingGPS} style={{ background: 'linear-gradient(135deg, #e63946, #f77f00)', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 8, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{detectingGPS ? 'Detecting...' : 'Detect My Location'}</button></label>
                       <input className="input-field" name="address" value={formData.address} onChange={handleChange} placeholder="Pickup address (or use Detect button)" required />
                     </div>
                     <div className="input-group">
@@ -605,12 +605,12 @@ export default function HomePage() {
                     {/* Nearby Hospitals */}
                     {(nearbyHospitals.length > 0 || loadingHospitals) && (
                       <div className="input-group form-full">
-                        <label>🏥 Nearest Hospitals {loadingHospitals && <span style={{ color: '#06b6d4', fontSize: '0.75rem', fontWeight: 400 }}>(searching...)</span>}</label>
+                        <label>Nearest Hospitals {loadingHospitals && <span style={{ color: '#e63946', fontSize: '0.75rem', fontWeight: 400 }}>(searching...)</span>}</label>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {nearbyHospitals.map((h, i) => (
-                            <button key={i} type="button" onClick={() => setSelectedHospital(h)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, border: selectedHospital === h ? '2px solid #06b6d4' : '1px solid rgba(148,163,184,0.2)', background: selectedHospital === h ? 'rgba(6,182,212,0.1)' : 'rgba(30,41,59,0.5)', color: '#e2e8f0', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', transition: 'all 0.2s' }}>
-                              <span style={{ fontWeight: selectedHospital === h ? 700 : 400 }}>🏥 {h.name}</span>
-                              <span style={{ color: '#06b6d4', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap', marginLeft: 12 }}>{h.distance.toFixed(1)} km</span>
+                            <button key={i} type="button" onClick={() => setSelectedHospital(h)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, border: selectedHospital === h ? '2px solid #e63946' : '1px solid rgba(148,163,184,0.2)', background: selectedHospital === h ? 'rgba(230,57,70,0.1)' : 'rgba(30,41,59,0.5)', color: '#e2e8f0', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', transition: 'all 0.2s' }}>
+                              <span style={{ fontWeight: selectedHospital === h ? 700 : 400 }}>{h.name}</span>
+                              <span style={{ color: '#e63946', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap', marginLeft: 12 }}>{h.distance.toFixed(1)} km</span>
                             </button>
                           ))}
                         </div>
@@ -619,17 +619,17 @@ export default function HomePage() {
 
                     {/* Fare + ETA Card */}
                     {fareEstimate && (
-                      <div style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(6,182,212,0.08), rgba(16,185,129,0.08))', border: '1px solid rgba(6,182,212,0.25)', borderRadius: 16, padding: '16px 20px' }}>
+                      <div style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(230,57,70,0.08), rgba(247,127,0,0.08))', border: '1px solid rgba(230,57,70,0.25)', borderRadius: 16, padding: '16px 20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                           <div>
-                            <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>💰 Estimated Fare</p>
-                            <p style={{ color: '#10b981', fontSize: '1.6rem', fontWeight: 800, margin: '4px 0' }}>₹{fareEstimate.fare}</p>
+                            <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>Estimated Fare</p>
+                            <p style={{ color: '#f77f00', fontSize: '1.6rem', fontWeight: 800, margin: '4px 0' }}>₹{fareEstimate.fare}</p>
                             <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>{fareEstimate.typeName} • ~{fareEstimate.distance} km to {fareEstimate.hospitalName}</p>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>⏱️ ETA</p>
-                            <p style={{ color: '#06b6d4', fontSize: '1.6rem', fontWeight: 800, margin: '4px 0' }}>~{fareEstimate.eta} min</p>
-                            <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>🚑 Ambulance arrival</p>
+                            <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>ETA</p>
+                            <p style={{ color: '#e63946', fontSize: '1.6rem', fontWeight: 800, margin: '4px 0' }}>~{fareEstimate.eta} min</p>
+                            <p style={{ color: '#64748b', fontSize: '0.7rem', margin: 0 }}>Ambulance arrival</p>
                           </div>
                         </div>
                       </div>
@@ -642,7 +642,7 @@ export default function HomePage() {
                   </div>
                   <div className="form-actions">
                     <button type="submit" className="btn btn-primary btn-lg" disabled={otpSending || showOTP}>
-                      {otpSending ? 'Sending OTP...' : '🔐 Verify & Book'}
+                      {otpSending ? 'Sending OTP...' : 'Verify & Book'}
                     </button>
                   </div>
                 </motion.form>
@@ -651,17 +651,17 @@ export default function HomePage() {
                 {showOTP && (
                   <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '2.5rem', maxWidth: 440, width: '90%', textAlign: 'center', background: '#111827', borderRadius: 24, border: '1px solid #1e293b' }}>
-                      <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}>🔐</div>
+                      <div style={{ width: 60, height: 60, background: 'linear-gradient(135deg, #e63946, #a855f7)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: 28 }}></div>
                       <h3 style={{ marginBottom: '0.5rem', color: '#ffffff', fontSize: '1.3rem' }}>Verify Your Phone</h3>
                       <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                        A 4-digit OTP has been sent to <span style={{ color: '#06b6d4', fontWeight: 700 }}>📱 {formData.phone}</span>
+                        A 4-digit OTP has been sent to <span style={{ color: '#e63946', fontWeight: 700 }}>{formData.phone}</span>
                       </p>
 
                       {/* OTP Code Display - looks like an SMS notification */}
                       {smsNotification && (
-                        <div style={{ background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: 16, padding: '14px 18px', marginBottom: '1.5rem', textAlign: 'left' }}>
+                        <div style={{ background: 'rgba(230,57,70,0.08)', border: '1px solid rgba(230,57,70,0.2)', borderRadius: 16, padding: '14px 18px', marginBottom: '1.5rem', textAlign: 'left' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #06b6d4, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>📩</div>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #e63946, #f77f00)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}></div>
                             <div>
                               <span style={{ fontWeight: 700, fontSize: '0.8rem', color: '#fff' }}>SSAS Verification</span>
                               <p style={{ fontSize: '0.7rem', color: '#64748b', margin: 0 }}>SMS • just now</p>
@@ -670,7 +670,7 @@ export default function HomePage() {
                           <p style={{ color: '#e2e8f0', fontSize: '0.85rem', margin: '0 0 10px 0' }}>Your verification code is:</p>
                           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, margin: '8px 0' }}>
                             {String(smsNotification.otp).split('').map((d, i) => (
-                              <span key={i} style={{ width: 42, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, color: '#fff', background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 10 }}>{d}</span>
+                              <span key={i} style={{ width: 42, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, color: '#fff', background: 'rgba(230,57,70,0.15)', border: '1px solid rgba(230,57,70,0.3)', borderRadius: 10 }}>{d}</span>
                             ))}
                           </div>
                           <p style={{ color: '#64748b', fontSize: '0.65rem', margin: '8px 0 0 0', textAlign: 'center' }}>Valid for 5 minutes • Do not share this code</p>
@@ -678,8 +678,8 @@ export default function HomePage() {
                       )}
 
                       {!smsNotification && (
-                        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
-                          <p style={{ color: '#6ee7b7', fontSize: '0.8rem', margin: 0 }}>⏳ Sending OTP to your phone...</p>
+                        <div style={{ background: 'rgba(247,127,0,0.1)', border: '1px solid rgba(247,127,0,0.25)', borderRadius: 12, padding: '12px 20px', marginBottom: '1.5rem' }}>
+                          <p style={{ color: '#6ee7b7', fontSize: '0.8rem', margin: 0 }}>Sending OTP to your phone...</p>
                         </div>
                       )}
 
@@ -699,7 +699,7 @@ export default function HomePage() {
                               background: '#1e293b', border: '2px solid #334155',
                               borderRadius: 14, color: '#ffffff', outline: 'none',
                             }}
-                            onFocus={e => { e.target.style.borderColor = '#06b6d4'; e.target.style.boxShadow = '0 0 12px rgba(6,182,212,0.3)'; }}
+                            onFocus={e => { e.target.style.borderColor = '#e63946'; e.target.style.boxShadow = '0 0 12px rgba(230,57,70,0.3)'; }}
                             onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }}
                           />
                         ))}
@@ -713,7 +713,7 @@ export default function HomePage() {
                         <button
                           onClick={(e) => { setOtpDigits(['', '', '', '']); handleRequestOTP(e); }}
                           disabled={otpSending}
-                          style={{ background: 'none', border: 'none', color: '#06b6d4', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'underline' }}
+                          style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'underline' }}
                         >
                           {otpSending ? 'Sending...' : '🔄 Resend OTP'}
                         </button>
@@ -725,11 +725,11 @@ export default function HomePage() {
                           onClick={() => { setShowOTP(false); setOtpDigits(['', '', '', '']); setOtpCode(''); }}
                         >Cancel</button>
                         <button
-                          style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: otpDigits.join('').length === 4 ? 'linear-gradient(135deg, #06b6d4, #10b981)' : '#334155', color: '#ffffff', fontSize: '0.95rem', fontWeight: 700, cursor: otpDigits.join('').length === 4 ? 'pointer' : 'not-allowed' }}
+                          style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: otpDigits.join('').length === 4 ? 'linear-gradient(135deg, #e63946, #f77f00)' : '#334155', color: '#ffffff', fontSize: '0.95rem', fontWeight: 700, cursor: otpDigits.join('').length === 4 ? 'pointer' : 'not-allowed' }}
                           onClick={handleVerifyAndBook}
                           disabled={submitting || otpDigits.join('').length !== 4}
                         >
-                          {submitting ? 'Confirming...' : '✅ Confirm Booking'}
+                          {submitting ? 'Confirming...' : 'Confirm Booking'}
                         </button>
                       </div>
                     </motion.div>
@@ -764,10 +764,10 @@ export default function HomePage() {
             </motion.div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
               {[
-                { name: 'Priya Sharma', city: 'Delhi', rating: 5, text: 'The ambulance arrived within 10 minutes. The paramedics were professional and caring. Saved my father\'s life. Thank you SSAS!' },
-                { name: 'Rajesh Kumar', city: 'Noida', rating: 5, text: 'Best ambulance service I\'ve used. The driver knew the fastest route and got us to the hospital in record time.' },
-                { name: 'Meena Patel', city: 'Gurgaon', rating: 4, text: 'Easy online booking, real-time tracking, and excellent service. The whole experience was smooth during a stressful time.' },
-                { name: 'Amit Singh', city: 'Faridabad', rating: 5, text: '24/7 availability is what sets SSAS apart. Called at 3AM and the ambulance was at my door within 12 minutes!' },
+                { name: 'Rahul Sharma', city: 'Andheri, Mumbai', rating: 5, text: 'Called at 2AM for my dad. The ambulance reached in 8 minutes with a paramedic who knew exactly what to do. Really grateful.' },
+                { name: 'Priya Desai', city: 'Bandra, Mumbai', rating: 5, text: 'The GPS tracking was super helpful. I could see exactly where the ambulance was. My mom was taken to the nearest hospital quickly.' },
+                { name: 'Vikram Joshi', city: 'Thane', rating: 4, text: 'Used it for a non-emergency transfer. The driver was professional and the ambulance was clean. Fair pricing too.' },
+                { name: 'Sneha Patil', city: 'Dadar, Mumbai', rating: 5, text: 'What I liked most is the fare estimate before booking. No surprises. The ambulance came faster than expected.' },
               ].map((t, i) => (
                 <motion.div key={i} className="glass-card" style={{ padding: '1.5rem' }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } } }}>
                   <div style={{ display: 'flex', gap: 4, marginBottom: '0.75rem' }}>
@@ -800,12 +800,12 @@ export default function HomePage() {
             </motion.div>
             <div>
               {[
-                { q: 'How fast can an ambulance reach me?', a: 'Our average response time is 10-15 minutes. In metro areas, we often arrive within 8 minutes.' },
-                { q: 'What types of ambulances do you offer?', a: 'We offer Basic Life Support (BLS), Advanced Life Support (ALS), Non-Emergency Transport, and Neonatal ambulances.' },
-                { q: 'How do I track my ambulance?', a: 'After booking, you receive a Booking ID. Use it on our Track page to see real-time location and status of your ambulance.' },
-                { q: 'Is the service available 24/7?', a: 'Yes! We operate 24 hours a day, 7 days a week, 365 days a year. Emergencies don\'t wait and neither do we.' },
-                { q: 'What if I need to cancel my booking?', a: 'You can cancel anytime before the ambulance arrives. Contact us via phone or WhatsApp for immediate cancellation.' },
-                { q: 'Do you accept insurance or cashless payments?', a: 'We accept cash, UPI, cards, and work with major insurance providers for cashless claims. Payment can be settled after the trip.' },
+                { q: 'How fast will the ambulance reach me?', a: 'In Mumbai, our ambulances usually reach within 8-10 minutes. We keep them stationed in different areas of the city to reduce wait time.' },
+                { q: 'What types of ambulances do you have?', a: 'We have BLS (Basic Life Support), ALS (Advanced Life Support), Non-Emergency patient transport, and Neonatal ambulances for newborn emergencies.' },
+                { q: 'How can I track my booked ambulance?', a: 'After you book, you get a Booking ID. Enter it on the Track page and you can see exactly where your ambulance is and its current status.' },
+                { q: 'Are you available at night?', a: 'Yes, we run 24/7, all 365 days. Emergencies can happen anytime and we are always ready.' },
+                { q: 'Can I cancel a booking?', a: 'Yes, you can cancel anytime before the ambulance reaches you. Just call us or send a WhatsApp message with your booking ID.' },
+                { q: 'How much does it cost?', a: 'The fare depends on the ambulance type and distance. You can see the estimated fare before confirming your booking. We accept cash, UPI, and cards.' },
               ].map((faq, i) => (
                 <motion.details key={i} className="glass-card" style={{ padding: '1rem 1.5rem', marginBottom: '0.75rem', cursor: 'pointer' }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { delay: i * 0.05 } } }}>
                   <summary style={{ fontWeight: 600, fontSize: '0.95rem', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
